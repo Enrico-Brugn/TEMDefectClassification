@@ -21,25 +21,32 @@ from src.utils.helpers import count_files#, LossHistory
 
 parser = argparse.ArgumentParser()
 # Data structure arguments
-parser.add_argument("-train_dir", "--train_dir", type=str, default="data/all_data/6folds_128/fold0/train/",
+parser.add_argument("-train_dir", "--train_dir", type=str, 
+                    default="data/all_data/6folds_128/fold0/train/",
                     help="Train directory. Contains subdirs separating images in classes.")
-parser.add_argument("-val_dir", "--val_dir", type=str, default="data/all_data/6folds_128/fold0/test/",
+parser.add_argument("-val_dir", "--val_dir", type=str, 
+                    default="data/all_data/6folds_128/fold0/test/",
                     help="Validation directory. Contains subdirs separating images in classes.")
-parser.add_argument("-output_dir", "--output_dir", type=str, default="output/test/",
+parser.add_argument("-output_dir", "--output_dir", type=str, 
+                    default="output/test/",
                     help="Output directory")
 parser.add_argument("-base", "--base_model", type=str, default="VGG16",
                     help="Keras Base model for transfer learning. So far tried 'VGG16', 'ResNet50'")
 parser.add_argument("-weights", "--weights", type=str, default='imagenet',
                     help="Weights for model. Either 'imagenet' or None.")
-parser.add_argument("-name", "--name", type=str, default="CNN_VGG16", help="Name for mlflow logging.")
+parser.add_argument("-name", "--name", type=str, default="CNN_VGG16", 
+                    help="Name for mlflow logging.")
 # Architecture arguments
 parser.add_argument("-train_all", "--train_all", type=bool, default=False,
                     help="If true, train all parameters of all layers of network again.")
-parser.add_argument("-fc", "--fc_layers", nargs='+', type=int, help="FC layers", )
-parser.add_argument("-d", "--dropout", type=float, default=0.5, help="Dropout fraction", )
+parser.add_argument("-fc", "--fc_layers", nargs='+', type=int, 
+                    help="FC layers", )
+parser.add_argument("-d", "--dropout", type=float, default=0.5, 
+                    help="Dropout fraction", )
 # Training arguments
 parser.add_argument("-e", "--epochs", type=int, default=60, help="Epochs")
-parser.add_argument("-b", "--batch_size", type=int, default=8, help="Batch size. Scales steps accordingly.")
+parser.add_argument("-b", "--batch_size", type=int, default=8, 
+                    help="Batch size. Scales steps accordingly.")
 parser.add_argument("-l", "--learning_rate", type=float, default=0.00001)
 
 args = parser.parse_args()
@@ -80,8 +87,8 @@ def train_cnn(dir_folds, output_dir, n_folds):
         if not os.path.exists(OUTPUT_DIR):
             os.makedirs(OUTPUT_DIR)
 
-        print("Total files in TRAIN_DIR: {}".format(TRAIN_TOTAL))
-        print("Total files in VAL_DIR: {}".format(VAL_TOTAL))
+        print(f"Total files in TRAIN_DIR: {TRAIN_TOTAL}")
+        print(f"Total files in VAL_DIR: {VAL_TOTAL}")
 
         # Load Base model with weights. Skip top layer
 
@@ -89,7 +96,8 @@ def train_cnn(dir_folds, output_dir, n_folds):
                        "ResNet50": ResNet50}
 
         base_model = base_models[args.base_model](
-            weights=args.weights, include_top=False, input_shape=(HEIGHT, WIDTH, 3)
+            weights=args.weights, include_top=False, input_shape=(HEIGHT, 
+                                                                  WIDTH, 3)
         )
 
         train_datagen = ImageDataGenerator(
@@ -134,20 +142,23 @@ def train_cnn(dir_folds, output_dir, n_folds):
             # New softmax layer
             predictions = Dense(num_classes, activation="softmax")(x)
 
-            finetune_model = Model(inputs=base_model.input, outputs=predictions)
+            finetune_model = Model(inputs=base_model.input, 
+                                   outputs=predictions)
 
             return finetune_model
 
 
         finetune_model = build_finetune_model(
-            base_model, dropout=DROPOUT, fc_layers=FC_LAYERS, num_classes=len(class_list)
+            base_model, dropout=DROPOUT, fc_layers=FC_LAYERS, 
+            num_classes=len(class_list)
         )
 
         # finetune_model = simple_cnn(num_classes=len(class_list))
 
         # In[4]
         adam = Adam(lr=args.learning_rate)
-        finetune_model.compile(adam, loss="categorical_crossentropy", metrics=["accuracy"])
+        finetune_model.compile(adam, loss="categorical_crossentropy", 
+                               metrics=["accuracy"])
         print(finetune_model.summary())
 
         # exit()

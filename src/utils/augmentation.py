@@ -4,7 +4,7 @@ import time
 import shutil
 import random
 
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 import numpy as np
 np.set_printoptions(threshold=sys.maxsize)
@@ -31,9 +31,11 @@ from keras.preprocessing.image import img_to_array
 from src.utils.modify_folders import sort_folds_by_label, remove_redundant_dirs
 
 
-def create_folds_(dir_images, dir_labels, dir_target, n_train=1, n_test=4, n_folds=2, format="tif"):
+def create_folds_(dir_images, dir_labels, dir_target, n_train=1, n_test=4, 
+                  n_folds=2, format='tif'):
     """
-    From images and labels, creating n_split-times a fold, each containing the structure
+    From images and labels, creating n_split-times a fold, each containing the 
+    structure
         -train
             -images
             -labels
@@ -45,20 +47,25 @@ def create_folds_(dir_images, dir_labels, dir_target, n_train=1, n_test=4, n_fol
     :param dir_labels: Directory in which to find labels
     :param dir_target: Target directory
     :param kfold: ratio between size of train and test split.
-    :param n_folds: Number of folds created. Needs to be equal or smaller than kfold
+    :param n_folds: Number of folds created. Needs to be equal or smaller than 
+                    kfold
     :param format: Expected image format. Tested with 'tif'
     :return:
     """
+    join = os.path.join
+    exists = os.path.exists
+    
     cwd = os.getcwd()
-    print("cwd", cwd)
-    print("target: ", dir_target)
-    assert not os.path.isdir(dir_target) # TODO: Replace all assert statements with actual raised errors
+    print('cwd', cwd)
+    print('target: ', dir_target)
+    # TODO: Replace all assert statements with actual raised errors
+    assert not os.path.isdir(dir_target) 
 
     filenames_images = [
-        file for file in os.listdir(dir_images) if file.endswith("." + format)
+        file for file in os.listdir(dir_images) if file.endswith('.' + format)
     ]
     filenames_labels = [
-        file for file in os.listdir(dir_labels) if file.endswith("." + format)
+        file for file in os.listdir(dir_labels) if file.endswith('.' + format)
     ]
     print(filenames_images)
     print(filenames_labels)
@@ -68,7 +75,8 @@ def create_folds_(dir_images, dir_labels, dir_target, n_train=1, n_test=4, n_fol
 
     for fold in range(n_folds):
         np.random.seed(fold)
-        all_idx = np.random.choice(range(len(filenames_images)), len(filenames_images), replace=False)
+        all_idx = np.random.choice(range(len(filenames_images)), 
+                                   len(filenames_images), replace=False)
         train_index = all_idx[:n_train]
         test_index = all_idx[n_train:n_train + n_test]
         omitted_index = all_idx[n_train + n_test:]
@@ -77,58 +85,57 @@ def create_folds_(dir_images, dir_labels, dir_target, n_train=1, n_test=4, n_fol
         print(test_index)
         print(omitted_index)
 
-        dir_fold = os.path.join(dir_target, "fold{}".format(fold))
-        dir_train = os.path.join(dir_fold, "train")
-        dir_test = os.path.join(dir_fold, "test")
-        dir_train_images = os.path.join(dir_train, "original", "images", "0")
-        dir_train_labels = os.path.join(dir_train, "original", "labels", "0")
-        dir_test_images = os.path.join(dir_test, "original", "images", "0")
-        dir_test_labels = os.path.join(dir_test, "original", "labels", "0")
+        dir_fold = join(dir_target, f'fold{fold}')
+        dir_train = join(dir_fold, 'train')
+        dir_test = join(dir_fold, 'test')
+        dir_train_images = join(dir_train, 'original', 'images', '0')
+        dir_train_labels = join(dir_train, 'original', 'labels', '0')
+        dir_test_images = join(dir_test, 'original', 'images', '0')
+        dir_test_labels = join(dir_test, 'original', 'labels', '0')
 
-        if not os.path.exists(dir_train_images):
+        if not exists(dir_train_images):
             os.makedirs(dir_train_images)
-        if not os.path.exists(dir_train_labels):
+        if not exists(dir_train_labels):
             os.makedirs(dir_train_labels)
-        if not os.path.exists(dir_test_images):
+        if not exists(dir_test_images):
             os.makedirs(dir_test_images)
-        if not os.path.exists(dir_test_labels):
+        if not exists(dir_test_labels):
             os.makedirs(dir_test_labels)
 
-        train_files = [str(i) + ": " + filenames_images[i] for i in train_index]
-        test_files = [str(i) + ": " + filenames_images[i] for i in test_index]
+        train_files = [
+            str(i) + ': ' + filenames_images[i] for i in train_index]
+        test_files = [
+            str(i) + ': ' + filenames_images[i] for i in test_index]
 
-        with open(os.path.join(dir_fold, "train.txt"), "w") as f:
+        with open(join(dir_fold, 'train.txt'), 'w') as f:
             for item in train_files:
-                f.write("%s\n" % item)
+                f.write('%s\n' % item)
 
-        with open(os.path.join(dir_fold, "test.txt"), "w") as f:
+        with open(join(dir_fold, 'test.txt'), 'w') as f:
             for item in test_files:
-                f.write("%s\n" % item)
+                f.write('%s\n' % item)
 
         for index in train_index:
             shutil.copy(
-                os.path.join(dir_images, filenames_images[index]),
-                os.path.join(dir_train_images),
+                join(dir_images, filenames_images[index]),
+                join(dir_train_images),
             )
             shutil.copy(
-                os.path.join(dir_labels, filenames_labels[index]),
-                os.path.join(dir_train_labels),
+                join(dir_labels, filenames_labels[index]),
+                join(dir_train_labels),
             )
         for index in test_index:
             shutil.copy(
-                os.path.join(dir_images, filenames_images[index]),
-                os.path.join(dir_test_images),
+                join(dir_images, filenames_images[index]),
+                join(dir_test_images),
             )
             shutil.copy(
-                os.path.join(dir_labels, filenames_labels[index]),
-                os.path.join(dir_test_labels),
+                join(dir_labels, filenames_labels[index]),
+                join(dir_test_labels),
             )
 
         print(
-            "Created fold{} with train/test: {}/{}".format(
-                fold, train_index, test_index
-            )
-        )
+            f'Created fold{fold} with train/test: {train_index}/{test_index}')
         fold += 1
 
     # else:
@@ -189,9 +196,11 @@ def create_folds_(dir_images, dir_labels, dir_target, n_train=1, n_test=4, n_fol
     #         )
     #     )
 
-def create_folds(dir_images, dir_labels, dir_target, kfold=1, n_folds=2, format="tif"):
+def create_folds(dir_images, dir_labels, dir_target, kfold=1, n_folds=2, 
+                 format='tif'):
     """
-    From images and labels, creating n_split-times a fold, each containing the structure
+    From images and labels, creating n_split-times a fold, each containing the 
+    structure
         -train
             -images
             -labels
@@ -203,21 +212,26 @@ def create_folds(dir_images, dir_labels, dir_target, kfold=1, n_folds=2, format=
     :param dir_labels: Directory in which to find labels
     :param dir_target: Target directory
     :param kfold: ratio between size of train and test split.
-    :param n_folds: Number of folds created. Needs to be equal or smaller than kfold
+    :param n_folds: Number of folds created. Needs to be equal or smaller than 
+                    kfold
     :param format: Expected image format. Tested with 'tif'
     :return:
     """
+    join = os.path.join
+    exists = os.path.exists
+    
     cwd = os.getcwd()
-    print("cwd", cwd)
-    print("target: ", dir_target)
-    assert not os.path.isdir(dir_target) # TODO: Replace all assert statements with actual raised errors
+    print('cwd', cwd)
+    print('target: ', dir_target)
+    assert not os.path.isdir(dir_target) 
+    # TODO: Replace all assert statements with actual raised errors
     assert n_folds <= kfold
 
     filenames_images = [
-        file for file in os.listdir(dir_images) if file.endswith("." + format)
+        file for file in os.listdir(dir_images) if file.endswith('.' + format)
     ]
     filenames_labels = [
-        file for file in os.listdir(dir_labels) if file.endswith("." + format)
+        file for file in os.listdir(dir_labels) if file.endswith('.' + format)
     ]
     print(filenames_images)
     print(filenames_labels)
@@ -227,64 +241,63 @@ def create_folds(dir_images, dir_labels, dir_target, kfold=1, n_folds=2, format=
 
     if kfold != 1:
         fold = 0
-        for train_index, test_index in KFold(kfold, random_state=42, shuffle=True).split(
-            filenames_images
-        ):
+        for train_index, test_index in KFold(kfold, random_state=42, 
+                                             shuffle=True).split(
+                                                 filenames_images):
             if n_folds <= fold:
                 break
 
-            dir_fold = os.path.join(dir_target, "fold{}".format(fold))
-            dir_train = os.path.join(dir_fold, "train")
-            dir_test = os.path.join(dir_fold, "test")
-            dir_train_images = os.path.join(dir_train, "original", "images", "0")
-            dir_train_labels = os.path.join(dir_train, "original", "labels", "0")
-            dir_test_images = os.path.join(dir_test, "original", "images", "0")
-            dir_test_labels = os.path.join(dir_test, "original", "labels", "0")
+            dir_fold = join(dir_target, f'fold{fold}')
+            dir_train = join(dir_fold, 'train')
+            dir_test = join(dir_fold, 'test')
+            dir_train_images = join(dir_train, 'original', 'images', '0')
+            dir_train_labels = join(dir_train, 'original', 'labels', '0')
+            dir_test_images = join(dir_test, 'original', 'images', '0')
+            dir_test_labels = join(dir_test, 'original', 'labels', '0')
 
-            if not os.path.exists(dir_train_images):
+            if not exists(dir_train_images):
                 os.makedirs(dir_train_images)
-            if not os.path.exists(dir_train_labels):
+            if not exists(dir_train_labels):
                 os.makedirs(dir_train_labels)
-            if not os.path.exists(dir_test_images):
+            if not exists(dir_test_images):
                 os.makedirs(dir_test_images)
-            if not os.path.exists(dir_test_labels):
+            if not exists(dir_test_labels):
                 os.makedirs(dir_test_labels)
 
-            train_files = [str(i) + ": " + filenames_images[i] for i in train_index]
-            test_files = [str(i) + ": " + filenames_images[i] for i in test_index]
+            train_files = [
+                str(i) + ': ' + filenames_images[i] for i in train_index]
+            test_files = [
+                str(i) + ': ' + filenames_images[i] for i in test_index]
 
-            with open(os.path.join(dir_fold, "train.txt"), "w") as f:
+            with open(join(dir_fold, 'train.txt'), 'w') as f:
                 for item in train_files:
-                    f.write("%s\n" % item)
+                    f.write('%s\n' % item)
 
-            with open(os.path.join(dir_fold, "test.txt"), "w") as f:
+            with open(join(dir_fold, 'test.txt'), 'w') as f:
                 for item in test_files:
-                    f.write("%s\n" % item)
+                    f.write('%s\n' % item)
 
             for index in train_index:
                 shutil.copy(
-                    os.path.join(dir_images, filenames_images[index]),
-                    os.path.join(dir_train_images),
+                    join(dir_images, filenames_images[index]),
+                    join(dir_train_images),
                 )
                 shutil.copy(
-                    os.path.join(dir_labels, filenames_labels[index]),
-                    os.path.join(dir_train_labels),
+                    join(dir_labels, filenames_labels[index]),
+                    join(dir_train_labels),
                 )
             for index in test_index:
                 shutil.copy(
-                    os.path.join(dir_images, filenames_images[index]),
-                    os.path.join(dir_test_images),
+                    join(dir_images, filenames_images[index]),
+                    join(dir_test_images),
                 )
                 shutil.copy(
-                    os.path.join(dir_labels, filenames_labels[index]),
-                    os.path.join(dir_test_labels),
+                    join(dir_labels, filenames_labels[index]),
+                    join(dir_test_labels),
                 )
 
             print(
-                "Created fold{} with train/test: {}/{}".format(
-                    fold, train_index, test_index
-                )
-            )
+            f'Created fold{fold} with train/test: {train_index}/{test_index}')
             fold += 1
 
     else:
@@ -292,58 +305,57 @@ def create_folds(dir_images, dir_labels, dir_target, kfold=1, n_folds=2, format=
         train_index = [i for i in range(len(filenames_images))]
         test_index = []
 
-        dir_fold = os.path.join(dir_target, "fold{}".format(fold))
-        dir_train = os.path.join(dir_fold, "train")
-        dir_test = os.path.join(dir_fold, "test")
-        dir_train_images = os.path.join(dir_train, "original", "images", "0")
-        dir_train_labels = os.path.join(dir_train, "original", "labels", "0")
-        dir_test_images = os.path.join(dir_test, "original", "images", "0")
-        dir_test_labels = os.path.join(dir_test, "original", "labels", "0")
+        dir_fold = join(dir_target, f'fold{fold}')
+        dir_train = join(dir_fold, 'train')
+        dir_test = join(dir_fold, 'test')
+        dir_train_images = join(dir_train, 'original', 'images', '0')
+        dir_train_labels = join(dir_train, 'original', 'labels', '0')
+        dir_test_images = join(dir_test, 'original', 'images', '0')
+        dir_test_labels = join(dir_test, 'original', 'labels', '0')
 
-        if not os.path.exists(dir_train_images):
+        if not exists(dir_train_images):
             os.makedirs(dir_train_images)
-        if not os.path.exists(dir_train_labels):
+        if not exists(dir_train_labels):
             os.makedirs(dir_train_labels)
-        if not os.path.exists(dir_test_images):
+        if not exists(dir_test_images):
             os.makedirs(dir_test_images)
-        if not os.path.exists(dir_test_labels):
+        if not exists(dir_test_labels):
             os.makedirs(dir_test_labels)
 
-        train_files = [str(i) + ": " + filenames_images[i] for i in train_index]
-        test_files = [str(i) + ": " + filenames_images[i] for i in test_index]
+        train_files = [
+            str(i) + ': ' + filenames_images[i] for i in train_index]
+        test_files = [str(i) + ': ' + filenames_images[i] for i in test_index]
 
-        with open(os.path.join(dir_fold, "train.txt"), "w") as f:
+        with open(join(dir_fold, 'train.txt'), 'w') as f:
             for item in train_files:
-                f.write("%s\n" % item)
+                f.write('%s\n' % item)
 
-        with open(os.path.join(dir_fold, "test.txt"), "w") as f:
+        with open(join(dir_fold, 'test.txt'), 'w') as f:
             for item in test_files:
-                f.write("%s\n" % item)
+                f.write('%s\n' % item)
 
         for index in train_index:
             shutil.copy(
-                os.path.join(dir_images, filenames_images[index]),
-                os.path.join(dir_train_images),
+                join(dir_images, filenames_images[index]),
+                join(dir_train_images),
             )
             shutil.copy(
-                os.path.join(dir_labels, filenames_labels[index]),
-                os.path.join(dir_train_labels),
+                join(dir_labels, filenames_labels[index]),
+                join(dir_train_labels),
             )
         for index in test_index:
             shutil.copy(
-                os.path.join(dir_images, filenames_images[index]),
-                os.path.join(dir_test_images),
+                join(dir_images, filenames_images[index]),
+                join(dir_test_images),
             )
             shutil.copy(
-                os.path.join(dir_labels, filenames_labels[index]),
-                os.path.join(dir_test_labels),
+                join(dir_labels, filenames_labels[index]),
+                join(dir_test_labels),
             )
 
         print(
-            "Created fold{} with train/test: {}/{}".format(
-                fold, train_index, test_index
-            )
-        )
+            f'Created fold{fold} with train/test: {train_index}/{test_index}')
+        
 
 def flip_intensity(image):
     """
@@ -352,16 +364,18 @@ def flip_intensity(image):
     :return:
     """
     image_flipped = image
-    image_flipped[:, :, 0] = -1*image[:, :, 0]+255
+    image_flipped[:, :, 0] = -1 * image[:, :, 0] + 255
     return image_flipped
 
 
 def augment_folds(dir_data, m, random_state=2):
     """
     Randomly augmenting images contained in single or multiple folds.
-    In each fold it creates a directory 'augmented' with the same structure as 'original'
+    In each fold it creates a directory 'augmented' with the same structure as
+    'original'
     :param dir_data: Directory where folds are located.
-                     folds need to be directories called "fold*" with the following structure:
+                     folds need to be directories called "fold*" with the 
+                     following structure:
                      train
                         original
                             images
@@ -374,78 +388,84 @@ def augment_folds(dir_data, m, random_state=2):
     :param m: factor of augmentation.
     :return:
     """
+    join = os.path.join
     # print("Augment")
     datagen_args_img = dict(
-        rotation_range=90,
-        fill_mode="constant",
-        cval=255,
+        rotation_range = 90,
+        fill_mode = 'constant',
+        cval = 255,
         # brightness_range=(0.5, 1),
-        zoom_range=0.05, ## Seems to work now. TODO: -> fix keras_preprocessing library before running!
-        horizontal_flip=True,
-        vertical_flip=True,
-        preprocessing_function=preprocess_input,
+        zoom_range = 0.05, 
+## Seems to work now. TODO: -> fix keras_preprocessing library before running!
+        horizontal_flip = True,
+        vertical_flip = True,
+        preprocessing_function = preprocess_input,
     )
 
     datagen_args_label = dict(
         rotation_range=90,
-        fill_mode="constant",
-        cval=255,
+        fill_mode ='constant',
+        cval = 255,
         # brightness_range=(0.5, 1),
-        zoom_range=0.05, ## Does not work if enabled!
-        horizontal_flip=True,
-        vertical_flip=True,
-        preprocessing_function=preprocess_input,
+        zoom_range = 0.05, ## Does not work if enabled!
+        horizontal_flip = True,
+        vertical_flip = True,
+        preprocessing_function = preprocess_input,
     )
 
     image_datagen = ImageDataGenerator(**datagen_args_img)
     label_datagen = ImageDataGenerator(**datagen_args_label)
 
-    folds = [file for file in os.listdir(dir_data) if file.startswith("fold")]
+    folds = [file for file in os.listdir(dir_data) if file.startswith('fold')]
 
     random_state = random_state
     for i in tqdm.trange(len(folds)):
         fold = folds[i]
     # for fold in folds:
-        dir_fold = os.path.join(dir_data, fold)
-        dir_train = os.path.join(dir_fold, "train")
-        dir_test = os.path.join(dir_fold, "test")
+        dir_fold = join(dir_data, fold)
+        dir_train = join(dir_fold, 'train')
+        dir_test = join(dir_fold, 'test')
 
         for dir in [dir_train, dir_test]:
             # print("LISTDIR:")
             # print(os.listdir(os.path.join(dir, "original", "images", "0")))
-            if os.listdir(os.path.join(dir, "original", "images", "0")) == []:
-                print("Empty directory")
+            if os.listdir(join(dir, 'original', 'images', '0')) == []:
+                print('Empty directory')
                 continue
 
             random_state += 1
             # print("DIR: ", dir)
-            dir_original = os.path.join(dir, "original")
-            dir_augmented = os.path.join(dir, "augmented")
-            dir_augmented_images = os.path.join(dir_augmented, "images", "0")
-            dir_augmented_labels = os.path.join(dir_augmented, "labels", "0")
+            dir_original = join(dir, 'original')
+            dir_augmented = join(dir, 'augmented')
+            dir_augmented_images = join(dir_augmented, 'images', '0')
+            dir_augmented_labels = join(dir_augmented, 'labels', '0')
             if os.path.exists(dir_augmented):
                 shutil.rmtree(dir_augmented, ignore_errors=True)
             os.makedirs(dir_augmented_images)
             os.makedirs(dir_augmented_labels)
 
             image_generator = image_datagen.flow_from_directory(
-                os.path.join(dir, "original", "images"),
-                color_mode="grayscale",
-                target_size=(1024, 1024),
-                batch_size=1000,  # Max value, choose larger than n_samples
-                class_mode=None,
-                shuffle=True,
-                seed=random_state,  # VERY IMPORTANT: NEEDS TO BE THE SAME FOR IMAGE_GENERATOR AND LABEL_GENERATOR
+                join(dir, 'original', 'images'),
+                color_mode = 'grayscale',
+                target_size = (1024, 1024),
+                batch_size = 1000,  # Max value, choose larger than n_samples
+                class_mode = None,
+                shuffle = True,
+                seed = random_state,  
+                # VERY IMPORTANT: NEEDS TO BE THE SAME FOR IMAGE_GENERATOR AND 
+                # LABEL_GENERATOR
             )
 
             label_generator = label_datagen.flow_from_directory(
-                os.path.join(dir, "original", "labels"),
-                color_mode="grayscale",
-                target_size=(1024, 1024),
-                batch_size=1000,  # Max value, choose larger than n_samples
-                class_mode=None,
-                shuffle=True,
-                seed=random_state,  # VERY IMPORTANT: NEEDS TO BE THE SAME FOR IMAGE_GENERATOR AND LABEL_GENERATOR
+                join(dir, 'original', 'labels'),
+                color_mode = 'grayscale',
+                target_size = (1024, 1024),
+                batch_size = 1000,  # Max value, choose larger than n_samples
+                class_mode = None,
+                shuffle = True,
+                seed = random_state,  
+                # VERY IMPORTANT: NEEDS TO BE THE SAME FOR IMAGE_GENERATOR AND
+                # LABEL_GENERATOR
             )
 
             j_image = 0
@@ -455,7 +475,7 @@ def augment_folds(dir_data, m, random_state=2):
                 X = image_generator.__next__()
                 for element in X:
                     save_img(
-                        os.path.join(dir_augmented_images, "{}.tif".format(j_image)),
+                        join(dir_augmented_images, f'{j_image}.tif'),
                         element,
                     )
                     j_image += 1
@@ -463,15 +483,17 @@ def augment_folds(dir_data, m, random_state=2):
                 y = label_generator.__next__()
                 for element in y:
                     save_img(
-                        os.path.join(dir_augmented_labels, "{}.tif".format(j_label)),
+                        join(dir_augmented_labels, f'{j_label}.tif'),
                         element,
                     )
                     j_label += 1
 
 
-def randomcrop_folds(dir_data, crop_target=None, batch_size=50, intensity_flip=True, rescale_intensity=True):
+def randomcrop_folds(dir_data, crop_target=None, batch_size=50, 
+                     intensity_flip=True, rescale_intensity=True):
     """
-    Randomly crops patches from images. It validates if they are free of border/white areas, then saves them ,
+    Randomly crops patches from images. It validates if they are free of 
+    border/white areas, then saves them ,
     :param dir_data:
     :param crop_target:
     :param batch_size:
@@ -479,27 +501,29 @@ def randomcrop_folds(dir_data, crop_target=None, batch_size=50, intensity_flip=T
     :param remove_original:
     :return:
     """
+    join = os.path.join
+    
     # print("Cropping")
-    folds = [file for file in os.listdir(dir_data) if file.startswith("fold")]
+    folds = [file for file in os.listdir(dir_data) if file.startswith('fold')]
 
     random_state = 2
     for k in tqdm.trange(len(folds)):
         fold = folds[k]
-        dir_fold = os.path.join(dir_data, fold)
-        dir_train = os.path.join(dir_fold, "train")
-        dir_test = os.path.join(dir_fold, "test")
+        dir_fold = join(dir_data, fold)
+        dir_train = join(dir_fold, 'train')
+        dir_test = join(dir_fold, 'test')
 
-        print("Cropping fold")
+        print('Cropping fold')
         for dir in [dir_train, dir_test]:
             # print("Directory: " + dir)
-            dir_original = os.path.join(dir, "original")
-            dir_augmented = os.path.join(dir, "augmented")
+            dir_original = join(dir, 'original')
+            dir_augmented = join(dir, 'augmented')
             if os.path.exists(dir_augmented):
-                if os.listdir(os.path.join(dir_augmented, "images")) == []:
+                if os.listdir(join(dir_augmented, 'images')) == []:
                     # print("Empty directory")
                     continue
             else:
-                print("Directory does not exist.")
+                print('Directory does not exist.')
                 continue
 
             # print("LISTDIR:")
@@ -509,11 +533,11 @@ def randomcrop_folds(dir_data, crop_target=None, batch_size=50, intensity_flip=T
 
             # dir_augmented_cropped = os.path.join(dir, "augmented_cropped")
 
-            dir_augmented_images = os.path.join(dir_augmented, "images", "0")
-            dir_augmented_labels = os.path.join(dir_augmented, "labels", "0")
+            dir_augmented_images = join(dir_augmented, 'images', '0')
+            dir_augmented_labels = join(dir_augmented, 'labels', '0')
 
-            dir_augmented_cropped_images = os.path.join(dir, "patches", "images")
-            dir_augmented_cropped_labels = os.path.join(dir, "patches", "labels")
+            dir_augmented_cropped_images = join(dir, 'patches', 'images')
+            dir_augmented_cropped_labels = join(dir, 'patches', 'labels')
             # if os.path.exists(dir_augmented_cropped):
             #     shutil.rmtree(dir_augmented_cropped, ignore_errors=True)
             os.makedirs(dir_augmented_cropped_images)
@@ -528,20 +552,21 @@ def randomcrop_folds(dir_data, crop_target=None, batch_size=50, intensity_flip=T
             while i < batch_size:
                 random_state += 1
                 j += 1
-                random.seed(a=random_state)
-                images_path = os.path.join(
-                    dir_augmented_images,
+                random.seed(a = random_state)
+                images_path = join(dir_augmented_images,
                     random.choice(sorted(os.listdir(dir_augmented_images))),
                 )
-                random.seed(a=random_state)
-                labels_path = os.path.join(
+                random.seed(a = random_state)
+                labels_path = join(
                     dir_augmented_labels,
                     random.choice(sorted(os.listdir(dir_augmented_images))),
                 )
 
                 # print(images_path)
-                images = img_to_array(load_img(images_path, color_mode="grayscale"))
-                labels = img_to_array(load_img(labels_path, color_mode="grayscale"))
+                images = img_to_array(load_img(images_path, 
+                                               color_mode = 'grayscale'))
+                labels = img_to_array(load_img(labels_path, 
+                                               color_mode = 'grayscale'))
 
                 # labels = labels.reshape([1024, 1024])
                 # plt.imshow(labels)
@@ -551,16 +576,17 @@ def randomcrop_folds(dir_data, crop_target=None, batch_size=50, intensity_flip=T
                 # exit()
 
                 batch_images_temp = random_crop(
-                    images, (crop_target, crop_target), seed=random_state
+                    images, (crop_target, crop_target), seed = random_state
                 )
                 batch_labels_temp = random_crop(
-                    labels, (crop_target, crop_target), seed=random_state
+                    labels, (crop_target, crop_target), seed = random_state
                 )
 
                 # batch_y_temp = batch_y[i]
 
                 max = np.mean(
-                    np.partition(batch_images_temp[:, :, 0].flatten(), -10)[-10:]
+                    np.partition(
+                        batch_images_temp[:, :, 0].flatten(), -10)[-10:]
                 )
 
                 if max != 255.0:  # Making sure to cover no edge!
@@ -570,19 +596,20 @@ def randomcrop_folds(dir_data, crop_target=None, batch_size=50, intensity_flip=T
 
                     # if rescale_intensity:
                     #     p2, p98 = np.percentile(batch_images_temp, (2, 98))
-                    #     batch_images_temp = exposure.rescale_intensity(batch_images_temp, in_range=(p2, p98))
+                    #     batch_images_temp = exposure.rescale_intensity(
+                    #                   batch_images_temp, in_range=(p2, p98))
 
                     save_img(
-                        os.path.join(
-                            dir_augmented_cropped_images, "{}.tif".format(i)
+                        join(
+                            dir_augmented_cropped_images, f'{i}.tif'
                         ),
                         batch_images_temp
                     )
                     save_img(
-                        os.path.join(
-                            dir_augmented_cropped_labels, "{}.tif".format(i)
+                        join(
+                            dir_augmented_cropped_labels, f'{i}.tif'
                         ),
-                        batch_labels_temp, scale=False
+                        batch_labels_temp, scale = False
                     )
 
                     i += 1
@@ -600,7 +627,7 @@ def randomcrop_folds(dir_data, crop_target=None, batch_size=50, intensity_flip=T
                     # plt.show()
                     pass
 
-            print("{} of {} passed".format(i, j))
+            print(f'{i} of {j} passed')
             # batch_images_crops = np.array(batch_images_crops)
             # batch_labels_crops = np.array(batch_labels_crops)
 
@@ -610,13 +637,14 @@ def random_crop(img, random_crop_size, seed=None):
     assert img.shape[2] == 3 or img.shape[2] == 1
     height, width = img.shape[0], img.shape[1]
     dy, dx = random_crop_size
-    np.random.seed(seed=seed)
+    np.random.seed(seed = seed)
     x = np.random.randint(0, width - dx + 1)
     y = np.random.randint(0, height - dy + 1)
     return img[y : (y + dy), x : (x + dx), :]
 
 
-def preprocess_generator(X_dir, y_dir=None, channels=1, batch_size=30, seed=None):
+def preprocess_generator(X_dir, y_dir = None, channels = 1, batch_size = 30, 
+                         seed = None):
     """
     Data generator, yields preprocessed images.
     TODO: Why do I need this?
@@ -631,10 +659,10 @@ def preprocess_generator(X_dir, y_dir=None, channels=1, batch_size=30, seed=None
         i = 0
         while i < batch_size:
             randomchoiceseed = random.randint(1, 10000)
-            random.seed(a=randomchoiceseed)
+            random.seed(a = randomchoiceseed)
             sample_path = random.choice(sorted(os.listdir(X_dir)))
             sample = load_img(
-                os.path.join(X_dir, sample_path), color_mode="grayscale"
+                os.path.join(X_dir, sample_path), color_mode = 'grayscale'
             )
             sample = img_to_array(sample)
             batch_x_crops.append(sample)
@@ -671,33 +699,40 @@ def get_spectrum(target_path, output_path):
 
 def get_spectrum_for_cnn(parent_dir, folds=1):
     """
-    For cnn structure, as produced by modify_folders.make_cnn_structure, calculate and save fourier spectras.
+    For cnn structure, as produced by modify_folders.make_cnn_structure, 
+    calculate and save fourier spectras.
     :param parent_dir:
     :param folds:
     :return:
     """
+    join = os.path.join
+    
     for fold in range(folds):
-        dir_foöd = os.path.join(parent_dir, "fold{}".format(fold))
+        dir_fold = join(parent_dir, f'fold{fold}')
 
-        train_nondefective = os.path.join(dir_foöd, "train", "non_defective")
-        train_defective = os.path.join(dir_foöd, "train", "defective")
-        test_nondefective = os.path.join(dir_foöd, "test", "non_defective")
-        test_defective = os.path.join(dir_foöd, "test", "defective")
-        cnn = [train_nondefective, train_defective, test_nondefective, test_defective]
+        train_nondefective = join(dir_fold, 'train', 'non_defective')
+        train_defective = join(dir_fold, 'train', 'defective')
+        test_nondefective = join(dir_fold, 'test', 'non_defective')
+        test_defective = join(dir_fold, 'test', 'defective')
+        cnn = [train_nondefective, train_defective, test_nondefective, 
+               test_defective]
 
-        spectraltrain_nondefective = os.path.join(dir_foöd, "spectral_train", "non_defective")
-        spectraltrain_defective = os.path.join(dir_foöd, "spectral_train", "defective")
-        spectraltest_nondefective = os.path.join(dir_foöd, "spectral_test", "non_defective")
-        spectraltest_defective = os.path.join(dir_foöd, "spectral_test", "defective")
-        cnn_spectral = [spectraltrain_nondefective, spectraltrain_defective, spectraltest_nondefective, spectraltest_defective]
+        spectraltrain_nondefective = join(dir_fold, 'spectral_train', 
+                                          'non_defective')
+        spectraltrain_defective = join(dir_fold, 'spectral_train', 'defective')
+        spectraltest_nondefective = join(dir_fold, 'spectral_test', 
+                                         'non_defective')
+        spectraltest_defective = join(dir_fold, 'spectral_test', 'defective')
+        cnn_spectral = [spectraltrain_nondefective, spectraltrain_defective, 
+                        spectraltest_nondefective, spectraltest_defective]
 
         for i in range(len(cnn)):
             if os.path.exists(cnn_spectral[i]):
                 shutil.rmtree(cnn_spectral[i])
             os.makedirs(cnn_spectral[i])
             for file in os.listdir(cnn[i]):
-                target_path = os.path.join(cnn[i], file)
-                output_path = os.path.join(cnn_spectral[i], file)
+                target_path = join(cnn[i], file)
+                output_path = join(cnn_spectral[i], file)
                 get_spectrum(target_path, output_path)
 
 
@@ -724,11 +759,14 @@ if __name__ == "__main__":
     kfold = 2
     folds = 2
 
-    create_folds(dir_images=dir_images, dir_labels=dir_labels, dir_target=dir_target,
-                 kfold=kfold, n_folds=folds)
+    create_folds(dir_images=dir_images, dir_labels=dir_labels, 
+                 dir_target=dir_target, kfold=kfold, n_folds=folds)
     augment_folds(dir_data=dir_target, m=1)
-    randomcrop_folds(dir_data=dir_target, crop_target=256, batch_size=50, intensity_flip=True)
-    sort_folds_by_label(dir_target=dir_target, n_folds=folds, threshold_defective=0.1, threshold_nondefective=0.01, nolabels=False)
+    randomcrop_folds(dir_data=dir_target, crop_target=256, batch_size=50, 
+                     intensity_flip=True)
+    sort_folds_by_label(dir_target=dir_target, n_folds=folds, 
+                        threshold_defective=0.1, threshold_nondefective=0.01, 
+                        nolabels=False)
     remove_redundant_dirs(dir_target, folds, "augmented", "patches")
     #
 
@@ -755,14 +793,17 @@ if __name__ == "__main__":
     # folds = 1
     # # create_folds(dir_data=dir_data, kfold=kfold, n_folds=folds)
     # # augment_folds(dir_data=dir_data, m=10, intensity_flip=True)
-    # crop_folds(dir=dir_data,  crop_target=256, batch_size=5000, remove_original=False)
+    # crop_folds(dir=dir_data,  crop_target=256, batch_size=5000, 
+    #            remove_original=False)
     #
     # for fold in range(folds):
     #     print("fold{}".format(fold))
     #     print("train")
-    #     sort_by_label(dir_data + "/fold{}/train/".format(str(fold)), threshold=0.05, nolabels=True)
+    #     sort_by_label(dir_data + "/fold{}/train/".format(str(fold)), 
+    #                   threshold=0.05, nolabels=True)
     #     print("test")
-    #     sort_by_label(dir_data + "/fold{}/test/".format(str(fold)), threshold=0.05, nolabels=True)
+    #     sort_by_label(dir_data + "/fold{}/test/".format(str(fold)), 
+    #                   threshold=0.05, nolabels=True)
     # # exit()
     #
     # dir_data = "../../data/cubic/defective"
@@ -770,12 +811,15 @@ if __name__ == "__main__":
     # folds = 1
     # # create_folds(dir_data=dir_data, kfold=kfold, n_folds=folds)
     # # augment_folds(dir_data=dir_data, m=10, intensity_flip=True)
-    # crop_folds(dir=dir_data,  crop_target=256, batch_size=1000, remove_original=False)
+    # crop_folds(dir=dir_data,  crop_target=256, batch_size=1000, 
+    #            remove_original=False)
     #
     # for fold in range(folds):
     #     print("fold{}".format(fold))
-    #     sort_by_label(dir_data + "/fold{}/train/".format(str(fold)), threshold=0.04)
-    #     # sort_by_label(dir_data + "/fold{}/test/".format(str(fold)), threshold=0.05)
+    #     sort_by_label(dir_data + "/fold{}/train/".format(str(fold)), 
+    #                   threshold=0.04)
+    #     # sort_by_label(dir_data + "/fold{}/test/".format(str(fold)), 
+    #                     threshold=0.05)
     #
     #
     # exit()

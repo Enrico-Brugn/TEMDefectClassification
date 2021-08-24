@@ -8,30 +8,32 @@ import matplotlib.pyplot as plt
 import cv2
 import tqdm
 
-def get_labels_from_json(dir_labels, dir_annotated, format="tif", no_label=False):
+def get_labels_from_json(dir_labels, dir_annotated, format = 'tif', 
+                         no_label = False):
     if not os.path.exists(dir_labels):
-        print("New Label Directory:", dir_labels)
+        print('New Label Directory:', dir_labels)
         os.makedirs(dir_labels)
     else:
-        print("Existing Label Directory:", dir_labels)
-        print("Attention: Overwriting...")
+        print('Existing Label Directory:', dir_labels)
+        print('Attention: Overwriting...')
 
-    print("Create labels in directory ", dir_labels)
+    print('Create labels in directory ', dir_labels)
 
     filenames = [
-        file for file in os.listdir(dir_annotated) if file.endswith("." + format)
+        file for file in os.listdir(dir_annotated) if file.endswith('.' + 
+                                                                    format)
     ]
 
     for i in tqdm.trange(len(filenames)):
         filename = filenames[i]
-    # for filename in filenames:
+        
         full_path = os.path.join(dir_annotated, filename)
         full_path_label = os.path.join(dir_labels, filename)
         image = img.imread(full_path)
 
         label = extract_label(
-            image, labelcolors=["red", "green", "blue"], fill=True, no_label=no_label
-        )
+            image, labelcolors = ['red', 'green', 'blue'], fill = True, 
+                                 no_label = no_label)
 
         Image.fromarray(np.uint8(label * 255.0)).save(full_path_label)
 
@@ -55,18 +57,20 @@ def get_labels_from_json(dir_labels, dir_annotated, format="tif", no_label=False
 
 def extract_label(
     image,
-    labelcolors=["red", "green", "blue"],
-    fill=True,
-    noise_suppression=True,
-    no_label=False,
+    labelcolors = ['red', 'green', 'blue'],
+    fill = True,
+    noise_suppression = True,
+    no_label = False,
 ):
     """
     For an annotated image, extracts binary label containing the label contour.
-    :param image_path: Path to grayscale image with drawn labels.
+    :param image: Path to grayscale image with drawn labels.
     :param labelcolors: Color of the label. So far only red is possible
     :param fill: boolean. If true, fills out contours.
-    :param noise_suppression: If true, filters binary mask with Gaussian kernel to reduce noise.
-    :param no_label: If true, creates labels that are all zeros (black). Good&fast for non-defective images.
+    :param noise_suppression: If true, filters binary mask with Gaussian kernel
+                              to reduce noise.
+    :param no_label: If true, creates labels that are all zeros (black). 
+                     Good&fast for non-defective images.
     :return: np array with shape [height, width]
     """
     height, width, channels = image.shape
@@ -76,15 +80,15 @@ def extract_label(
         return label
 
     for color in labelcolors:
-        if color == "red":
+        if color == 'red':
             rgb_threshold = [220, -200, -200]
-        elif color == "green":
+        elif color == 'green':
             rgb_threshold = [-200, 220, -200]
-        elif color == "blue":
+        elif color == 'blue':
             rgb_threshold = [-200, -200, 220]
         else:
 
-            print("Label color should be 'red', 'green' or 'blue'.")
+            print('Label color should be "red", "green" or "blue".')
             return
 
         s = []
@@ -146,33 +150,41 @@ def fill_holes(im_th):
 def get_labels(dir_labels, dir_annotated, format="tif", no_label=False):
     """
     Creates binary pixel-wise labels from annotations.
-    :param dir_labels: Target directory where labels will be saved. Will be created if not existing.
+    :param dir_labels: Target directory where labels will be saved. Will be 
+                       created if not existing.
     :param dir_annotated: Directory where annotations are located.
         ATTENTION: Annotations must ...
-            * ... be of the color RED ([255, 0, 0]), GREEN ([0, 255, 0]) or BLUE ([0, 0, 255])
+            * ... be of the color RED ([255, 0, 0]), GREEN ([0, 255, 0]) or 
+                  BLUE ([0, 0, 255])
             * ... be continuous lines (no dashes!) that form a closed loop
-            * ... not touch the walls or be so close to the walls that there is no space from them to flow.
-        Let me explain this further. You can imagine the algorithm to work like water flowing from the walls,
-        only halting of borders of a specific color.
-        Everything covered by the water will be black (zeros), everything else white (ones).
-        If it didn't work for your annotation, try again for them fulfilling above points.
+            * ... not touch the walls or be so close to the walls that there 
+                  is no space from them to flow.
+        Let me explain this further. You can imagine the algorithm to work 
+        like water flowing from the walls, only halting of borders of a 
+        specific color.
+        Everything covered by the water will be black (zeros), everything else 
+        white (ones). If it didn't work for your annotation, try again for 
+        them fulfilling above points.
     :param format: Image format, tried with "tif"
-    :param no_label: If true, creates labels that are all zeros (black). Good&fast for non-defective images.
+    :param no_label: If true, creates labels that are all zeros (black). 
+                     Good&fast for non-defective images.
     :return:
     """
     if not os.path.exists(dir_labels):
-        print("New Label Directory:", dir_labels)
+        print('New Label Directory:', dir_labels)
         os.makedirs(dir_labels)
     else:
-        print("Existing Label Directory:", dir_labels)
-        print("Attention: Overwriting...")
+        print('Existing Label Directory:', dir_labels)
+        #TODO: give an option to save ouselves from the horror of data loss
+        print('Attention: Overwriting...')
 
-    print("Create labels in directory ", dir_labels)
-
+    print('Create labels in directory ', dir_labels)
+    
+    # Make a list of filenames
     filenames = [
-        file for file in os.listdir(dir_annotated) if file.endswith("." + format)
-    ]
-
+        file for file in os.listdir(dir_annotated) if file.endswith('.' + 
+                                                                    format)]
+    # wrapping filenames for progress bar fancyness
     for i in tqdm.trange(len(filenames)):
         filename = filenames[i]
     # for filename in filenames:
@@ -181,8 +193,8 @@ def get_labels(dir_labels, dir_annotated, format="tif", no_label=False):
         image = img.imread(full_path)
 
         label = extract_label(
-            image, labelcolors=["red", "green", "blue"], fill=True, no_label=no_label
-        )
+            image, labelcolors=['red', 'green', 'blue'], fill = True, 
+            no_label = no_label)
 
         Image.fromarray(np.uint8(label * 255.0)).save(full_path_label)
 
@@ -204,17 +216,17 @@ def get_labels(dir_labels, dir_annotated, format="tif", no_label=False):
         plt.show()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     # Get labels for defective images (will take a while)
     get_labels(
-        dir_labels="../../data/cubic/defective/labels/",
-        dir_annotated="../../data/cubic/defective/annotations",
-        no_label=False,
+        dir_labels = '../../data/cubic/defective/labels/',
+        dir_annotated = '../../data/cubic/defective/annotations',
+        no_label = False,
     )
 
     # Get labels for non-defective images (should be fast)
     get_labels(
-        dir_labels="../../data/cubic/non_defective/labels/",
-        dir_annotated="../../data/cubic/non_defective/annotations",
-        no_label=True,
+        dir_labels = '../../data/cubic/non_defective/labels/',
+        dir_annotated = '../../data/cubic/non_defective/annotations',
+        no_label = True,
     )

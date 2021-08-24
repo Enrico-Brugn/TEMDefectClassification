@@ -14,7 +14,8 @@ import matplotlib.patches as mpatches
 import src.utils.helpers as helpers
 
 
-def get_mask(filename_json, int_dict = {'B': 0, 'S': 1, 'A': 2}, size_x=1024, size_y=1024):
+def get_mask(filename_json, int_dict = {'B': 0, 'S': 1, 'A': 2}, size_x=1024, 
+                                        size_y=1024):
     """
     Get pixel-wise numpy array with labels inside
     :param filename_json:
@@ -31,12 +32,15 @@ def get_mask(filename_json, int_dict = {'B': 0, 'S': 1, 'A': 2}, size_x=1024, si
         label = item['label']
         points_polygon = np.array(item["points"])
 
-        x, y = np.meshgrid(np.arange(size_y), np.arange(size_x))  # make a canvas with coordinates
+        # make a canvas with coordinates
+        x, y = np.meshgrid(np.arange(size_y), np.arange(size_x))  
         x, y = x.flatten(), y.flatten()
+        # make a polygon
         points = np.vstack((x, y)).T
-        p = mPath(points_polygon)  # make a polygon
+        p = mPath(points_polygon)  
         grid = p.contains_points(points)
-        mask = grid.reshape(size_y, size_x) * int_dict[label]  # now you have a mask with points inside a polygon
+        # now you have a mask with points inside a polygon
+        mask = grid.reshape(size_y, size_x) * int_dict[label]  
         mask_total = np.maximum.reduce([mask, mask_total])
     return mask_total
 
@@ -91,7 +95,8 @@ def get_masks(dir_json,
 def plot_labels(source_dir,
                 output_dir,
                 int_dict = {'B': 0, 'S': 1, 'A': 2},
-                label_dict = {'B': 'primary symmetry', 'S': 'secondary symmetry', 'A': 'blurred'},
+                label_dict = {'B': 'primary symmetry', 'S': 
+                              'secondary symmetry', 'A': 'blurred'},
                 show=False):
     """
     Make plots comparing raw data with labeled data
@@ -114,13 +119,18 @@ def plot_labels(source_dir,
             filename_tif = filename[:-5]+".tif"
             print(filename_tif + " :" )
 
-            fig, axes = plt.subplots(ncols=2, nrows=1, sharex=True, sharey=True, figsize=(12,6))
-            original = helpers.get_image(os.path.join(source_dir, filename_tif))
-            labelmask = get_mask(filename_json=os.path.join(source_dir, filename_json), int_dict=int_dict)
+            fig, axes = plt.subplots(ncols=2, nrows=1, sharex=True, 
+                                     sharey=True, figsize=(12,6))
+            original = helpers.get_image(os.path.join(source_dir, 
+                                                      filename_tif))
+            labelmask = get_mask(filename_json=os.path.join(source_dir, 
+                                                            filename_json), 
+                                 int_dict=int_dict)
 
             axes[0].imshow(original, cmap="gray")
             axes[1].imshow(original, cmap="gray")
-            im = axes[1].imshow(labelmask, alpha=0.2, cmap='hot', vmax=max(int_dict.values())*1.2)
+            im = axes[1].imshow(labelmask, alpha=0.2, cmap='hot', 
+                                vmax=max(int_dict.values())*1.2)
 
             axes[0].set_title("raw")
             axes[1].set_title("labeled")
@@ -133,11 +143,12 @@ def plot_labels(source_dir,
             # get the colors of the values, according to the
             # colormap used by imshow
             int_dict_reversed = {v: k for k, v in int_dict.items()}
-            patches = [mpatches.Patch(color=im.cmap((value/max(int_dict.values()))/1.2), label=label_dict[int_dict_reversed[value]]) for
-                       value in
-                       values]
+            patches = [mpatches.Patch(color=im.cmap((value/max(int_dict.values(
+                )))/1.2), label=label_dict[int_dict_reversed[value]]) for
+                       value in values]
             # put those patched as legend-handles into the legend
-            axes[1].legend(handles=patches, bbox_to_anchor=(0.73, -0.02), loc=0, borderaxespad=0.)
+            axes[1].legend(handles=patches, bbox_to_anchor=(0.73, -0.02), 
+                           loc=0, borderaxespad=0.)
 
             plt.suptitle(name)
             plt.savefig(output_dir.joinpath(name + "_labeled.png"), dpi=300)
