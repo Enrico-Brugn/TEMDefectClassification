@@ -1,3 +1,5 @@
+# %% Import block
+
 import os
 import sys
 import argparse
@@ -13,17 +15,17 @@ from src.train_cnn import train_cnn
 # Aliasing  os.path.join fuction
 join = os.path.join
 
-# Data structure arguments
+#%% Data structure
 # Create Parser object
 parser = argparse.ArgumentParser()
 # add arguments:
-# a. name of the file
+# a. name of the file?
 parser.add_argument('-file', '--file', type=str, default='all_data.zip',
                     help='Name of zipped data file.')
-# b. does it need to be unzipped
+# b. does it need to be unzipped?
 parser.add_argument('-unzip', '--unzip', type=bool, default=True,
                     help='Unzip?')
-#???? c. does it need to convert annotations to labels 
+#???? c. does it need to convert annotations to labels?
 parser.add_argument('-labels', '--labels', type=bool, default=True,
                     help='Convert annotations to labels?')
 # d. does it need preprocessing?
@@ -71,29 +73,34 @@ parent_dir, name, image_format = re.split('\.|\/', DATA_ZIPFILE)
 #this splits the path of the data into parent folder, name of the file and 
 #format of the file, by splitting a string when either . or / are encountered
 
-#???? Create directory paths for later use
+#???? Create directory paths for later use (directories not created)
+# general data directory
 dir_data = join(parent_dir, name)
 
+# defect-containing data
 dir_defective = join(dir_data, 'defective')
 dir_defective_images = join(dir_defective, 'images')
 dir_defective_annotations = join(dir_defective, 'annotations')
 dir_defective_labels = join(dir_defective, 'labels')
 dir_defective_json = join(dir_defective, 'json')
 
+# data without defects
 dir_nondefective = join(dir_data, 'non_defective')
 dir_nondefective_images = join(dir_nondefective, 'images')
 dir_nondefective_annotations = join(dir_nondefective, 'annotations')
 dir_nondefective_labels = join(dir_nondefective, 'labels')
 
+# directories for training
 dir_folds = join(dir_data, f'n_train_{params["N_TRAIN"]}')
 dir_output = join('output', name, f'n_train_{params["N_TRAIN"]}')
 
+# %% Preprocessing
 # Check if files are zipped and in case unzip
 if UNZIP:
     if image_format == 'zip':
         # Unzip Data: ZipFile class object aliased as zip_ref
         with ZipFile(DATA_ZIPFILE, 'r') as zip_ref:
-            # Extracts all members of the zipped archive 
+            # Extract all files in the zipped archive 
             # (extractall class method)
             zip_ref.extractall(parent_dir)
 
@@ -120,6 +127,7 @@ if LABELS:
 if PREPROCESSING:
     run(dir_data, dir_defective, dir_nondefective, dir_folds, params)
 
+# %% Training
 if TRAIN_CNN:
     train_cnn(dir_folds=dir_folds, output_dir=dir_output, 
               n_folds=params["N_FOLDS"])

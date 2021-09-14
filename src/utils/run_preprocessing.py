@@ -3,6 +3,7 @@ import sys
 import shutil
 import tqdm
 
+#???? sets the directory to the one "setup" is in
 sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 
 from src.utils.preprocessing import preprocess_folder
@@ -22,6 +23,7 @@ def run(DIR_PARENT, DIR_DEFECTIVE, DIR_NONDEFECTIVE, DIR_FOLDS, PARAMS):
     :param PARAMS:
     :return:
     """
+    # %% Aliasing of params dictionary values
     N_TRAIN = PARAMS['N_TRAIN']
     N_TEST = PARAMS['N_TEST']
     N_FOLDS = PARAMS['N_FOLDS']
@@ -31,21 +33,23 @@ def run(DIR_PARENT, DIR_DEFECTIVE, DIR_NONDEFECTIVE, DIR_FOLDS, PARAMS):
     # Number of sampled patches
     BATCH_SIZE = PARAMS['BATCH_SIZE']
     # Lower limit for normalized defective area in order to be classified 
-    #'defective'
+    # 'defective'
     THRESHOLD_DEFECTIVE = PARAMS['THRESHOLD_DEFECTIVE']
     # Upper limit for normalized defective area in order to be classified 
-    #'non_defective'
+    # 'non_defective'
     THRESHOLD_NONDEFECTIVE = PARAMS['THRESHOLD_NONDEFECTIVE']
-
+    
+    # %% Preprocessing folders
+    # Create a list of directories
     dirs = [DIR_DEFECTIVE]#, DIR_NONDEFECTIVE]
-    for dir in dirs:
-        dir_original = os.path.join(dir, 'images')
-        dir_preprocessed = os.path.join(dir, 'preprocessed')
-        dir_labels = os.path.join(dir, 'labels')
-        dir_target = os.path.join(dir, 'folds')
+    for directory in dirs:
+        dir_original = os.path.join(directory, 'images')
+        dir_preprocessed = os.path.join(directory, 'preprocessed')
+        dir_labels = os.path.join(directory, 'labels')
+        dir_target = os.path.join(directory, 'folds')
 
         _nolabels = False
-        if dir == DIR_NONDEFECTIVE:
+        if directory == DIR_NONDEFECTIVE:
             _nolabels = True
 
         # Preprocessing
@@ -62,7 +66,7 @@ def run(DIR_PARENT, DIR_DEFECTIVE, DIR_NONDEFECTIVE, DIR_FOLDS, PARAMS):
         #               n_folds=N_SPLITS)
         # exit()
 
-        # Augmenting
+        # %% Augmenting
         print('AUGMENTING...')
         augment_folds(dir_data = dir_target, m = AUGMENTATION_FACTOR)
         print('RANDOM CROPPING...')
@@ -83,19 +87,21 @@ def run(DIR_PARENT, DIR_DEFECTIVE, DIR_NONDEFECTIVE, DIR_FOLDS, PARAMS):
         # Deleting redundant files to save storage
         print('REMOVE REDUNDANT DIRS...')
         # remove_redundant_dirs(dir_target, N_FOLDS, "augmented", "patches")
-
-    # For each fold, make CNN structure
+    
+    # %% making CNN structure
+    # For each fold, make CNN structure, tqdm for progress bars
     for fold in tqdm.trange(N_FOLDS):
         make_cnn_structure(dir_target = DIR_PARENT,
                            dir_output = DIR_FOLDS,
                            fold = fold,
                            balanced = True)
 
-    # Delete redundant
-    for dir in dirs:
-        dir_target = os.path.join(dir, 'folds')
+    # %% Delete redundant
+    for directory in dirs:
+        dir_target = os.path.join(directory, 'folds')
         if os.path.exists(dir_target):
-            print(f'Deleting directory at {dir_target}') 
+            print(f'Deleting directory at {dir_target}')
+            # deletes dir_target and all the directories it contains
             shutil.rmtree(dir_target, ignore_errors=True)
 
 #

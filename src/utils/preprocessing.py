@@ -122,9 +122,11 @@ def preprocess_image(image,
 
     try:
         if highpass_filter is not None:
-            image_preprocessed = highpass_filters[highpass_filter](image_preprocessed, highpass_kernel_size)
+            image_preprocessed = highpass_filters[highpass_filter](image_preprocessed, 
+                                                                   highpass_kernel_size)
         if lowpass_filter is not None:
-            image_preprocessed = lowpass_filters[lowpass_filter](image_preprocessed, lowpass_kernel_size)
+            image_preprocessed = lowpass_filters[lowpass_filter](image_preprocessed, 
+                                                                 lowpass_kernel_size)
     except KeyError:
         print("Filter not implemented yet.")
 
@@ -163,10 +165,10 @@ def preprocess_file(file_path, file_path_preprocessed,
 
 
 
-def preprocess_folder(directory_original, directory_preprocessed, image_format=".tif",
-                      lowpass_filter="gaussian", lowpass_kernel_size=5,
-                      highpass_filter="laplacian", highpass_kernel_size=19,
-                      rescale=False):
+def preprocess_folder(directory_original, directory_preprocessed, 
+                      image_format=".tif", lowpass_filter="gaussian", 
+                      lowpass_kernel_size=5, highpass_filter="laplacian", 
+                      highpass_kernel_size=19, rescale=False):
     """
     Preprocesses all images with a given format in a directory, according to choices of preprocessing.
     :param directory_original: directory with images to be preprocessed
@@ -198,8 +200,10 @@ def preprocess_folder(directory_original, directory_preprocessed, image_format="
         file_path_preprocessed = os.path.join(directory_preprocessed, path)
 
         preprocess_file(file_path, file_path_preprocessed,
-                        lowpass_filter=lowpass_filter, lowpass_kernel_size=lowpass_kernel_size,
-                        highpass_filter=highpass_filter, highpass_kernel_size=highpass_kernel_size,
+                        lowpass_filter=lowpass_filter, 
+                        lowpass_kernel_size=lowpass_kernel_size,
+                        highpass_filter=highpass_filter, 
+                        highpass_kernel_size=highpass_kernel_size,
                         rescale=rescale)
         # TODO: Make sure that arguments are passed on, best in a nice way!!!
 
@@ -222,10 +226,14 @@ def preprocess_showingoff(file_path, output_dir, name,
     :return:
     """
     image = get_image(file_path)
-    image_laplace = preprocess_image(image=image, lowpass_filter=None, lowpass_kernel_size=None,
-                                     highpass_filter=highpass_filter, highpass_kernel_size=highpass_kernel_size)
-    image_preprocessed = preprocess_image(image=image_laplace, lowpass_filter=lowpass_filter,
-                                          lowpass_kernel_size=lowpass_kernel_size, highpass_filter=None,
+    image_laplace = preprocess_image(image=image, lowpass_filter=None, 
+                                     lowpass_kernel_size=None,
+                                     highpass_filter=highpass_filter, 
+                                     highpass_kernel_size=highpass_kernel_size)
+    image_preprocessed = preprocess_image(image=image_laplace, 
+                                          lowpass_filter=lowpass_filter,
+                                          lowpass_kernel_size=lowpass_kernel_size, 
+                                          highpass_filter=None,
                                           highpass_kernel_size=None)
 
 
