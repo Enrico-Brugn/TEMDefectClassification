@@ -75,8 +75,10 @@ def train_cnn(dir_folds, output_dir, n_folds):
         TRAIN_TOTAL = count_files(TRAIN_DIR)
         VAL_TOTAL = count_files(VAL_DIR)
         class_list = ["defective", "non_defective"]
-        HEIGHT = 128  # Height of image. Optimally, for ResNet50, this should be equal to 224
-        WIDTH = 128  # Width of image. Optimally, for ResNet50, this should be equal to 224
+# Height of image. Optimally, for ResNet50, this should be equal to 224
+        HEIGHT = 128  
+# Width of image. Optimally, for ResNet50, this should be equal to 224
+        WIDTH = 128  
         FC_LAYERS = args.fc_layers
         FC_LAYERS = [1024, 1024, 512]
         DROPOUT = args.dropout
@@ -120,7 +122,8 @@ def train_cnn(dir_folds, output_dir, n_folds):
 
         def build_finetune_model(base_model, dropout, fc_layers, num_classes):
             """
-            Build upon last layer of base_model. This allows finetuning to our data set.
+            Build upon last layer of base_model. 
+            This allows finetuning to our data set.
             :param base_model:
             :param dropout:
             :param fc_layers:
