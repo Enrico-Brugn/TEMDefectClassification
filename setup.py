@@ -131,6 +131,3 @@ if PREPROCESSING:
 if TRAIN_CNN:
     train_cnn(dir_folds=dir_folds, output_dir=dir_output, 
               n_folds=params["N_FOLDS"])
-
-
-

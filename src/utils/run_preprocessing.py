@@ -1,3 +1,5 @@
+# %% Import block
+
 import os
 import sys
 import shutil
@@ -12,16 +14,19 @@ from src.utils.augmentation import create_folds, create_folds_, augment_folds,\
 from src.utils.modify_folders import sort_folds_by_label, sort_folds_by_label_,\
                                      remove_redundant_dirs, make_cnn_structure
 
+# %% Preprocessing function
 
 def run(DIR_PARENT, DIR_DEFECTIVE, DIR_NONDEFECTIVE, DIR_FOLDS, PARAMS):
     """
-
-    :param DIR_PARENT:
-    :param DIR_DEFECTIVE:
-    :param DIR_NONDEFECTIVE:
-    :param DIR_FOLDS:
-    :param PARAMS:
-    :return:
+    #????
+     
+    :param DIR_PARENT: #????
+    :param DIR_DEFECTIVE: #????
+    :param DIR_NONDEFECTIVE: #????
+    :param DIR_FOLDS: #????
+    :param PARAMS: #????
+    
+    :return: #????
     """
     # %% Aliasing of params dictionary values
     N_TRAIN = PARAMS['N_TRAIN']
@@ -83,10 +88,6 @@ def run(DIR_PARENT, DIR_DEFECTIVE, DIR_NONDEFECTIVE, DIR_FOLDS, PARAMS):
                              threshold_defective = THRESHOLD_DEFECTIVE,
                              threshold_nondefective = THRESHOLD_NONDEFECTIVE, 
                              nolabels = False)
-
-        # Deleting redundant files to save storage
-        print('REMOVE REDUNDANT DIRS...')
-        # remove_redundant_dirs(dir_target, N_FOLDS, "augmented", "patches")
     
     # %% making CNN structure
     # For each fold, make CNN structure, tqdm for progress bars
@@ -97,11 +98,14 @@ def run(DIR_PARENT, DIR_DEFECTIVE, DIR_NONDEFECTIVE, DIR_FOLDS, PARAMS):
                            balanced = True)
 
     # %% Delete redundant
+    # Deleting redundant files to save storage
+    print('REMOVE REDUNDANT DIRS...')
+    # remove_redundant_dirs(dir_target, N_FOLDS, "augmented", "patches")
     for directory in dirs:
         dir_target = os.path.join(directory, 'folds')
         if os.path.exists(dir_target):
             print(f'Deleting directory at {dir_target}')
-            # deletes dir_target and all the directories it contains
+            # deletes dir_target and all the directories and files it contains
             shutil.rmtree(dir_target, ignore_errors=True)
 
 #
