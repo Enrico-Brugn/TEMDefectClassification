@@ -175,20 +175,27 @@ def preprocess_file(file_path, file_path_preprocessed,
     # Get a grayscale version of the image pointed at in "file_path" and save
     # it in the variable "image"
     image = get_image(file_path)
-    # image_preprocessed = preprocess_image(image=image, lowpass_filter=lowpass_filter, lowpass_kernel_size=lowpass_kernel_size, highpass_filter=highpass_filter, highpass_kernel_size=highpass_kernel_size, rescale=rescale)
+    # image_preprocessed = preprocess_image(image=image, 
+    # lowpass_filter=lowpass_filter, lowpass_kernel_size=lowpass_kernel_size, 
+    # highpass_filter=highpass_filter, highpass_kernel_size=highpass_kernel_size, 
+    # rescale=rescale)
     
     # With the module "skimage.filters" apply a gaussian filter to the "image"
     # image: 
-    #???? How does this work? What is "2" and "3" Possibly the sigma
+    #???? How does this work? What is "2" and "3"? Possibly the sigma?
+    #???? Does the subtraction return the difference between 2 arrays? If so 
+    #???? the high pass filter would be gaussian? If so there are a lot of
+    #???? unused aramenters
     image_preprocessed = filters.gaussian(image, 2) - filters.gaussian(image, 3)  
     # Looks quite much like previous setting
     
+    #???? What does this do?
     image_preprocessed = np.interp(image_preprocessed, 
                                    (image_preprocessed.min(), 
                                     image_preprocessed.max()), 
                                    (0, 254))
 
-    image_preprocessed =  image_preprocessed.astype('uint8')
+    image_preprocessed = image_preprocessed.astype('uint8')
     cv2.imwrite(file_path_preprocessed, image_preprocessed)
 
 
