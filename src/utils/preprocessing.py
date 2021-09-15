@@ -185,7 +185,7 @@ def preprocess_file(file_path, file_path_preprocessed,
     #???? How does this work? What is "2" and "3"? Possibly the sigma?
     #???? Does the subtraction return the difference between 2 arrays? If so 
     #???? the high pass filter would be gaussian? If so there are a lot of
-    #???? unused aramenters
+    #???? unused paramenters
     image_preprocessed = filters.gaussian(image, 2) - filters.gaussian(image, 3)  
     # Looks quite much like previous setting
     
