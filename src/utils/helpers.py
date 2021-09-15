@@ -35,6 +35,7 @@ def get_image(image_path):
     :return: np.array
     """
     assert os.path.exists(image_path)
+    # Save in variable "Original" a grayscale version of "image_path"
     original = cv2.imread(image_path, 0)
     return original
 

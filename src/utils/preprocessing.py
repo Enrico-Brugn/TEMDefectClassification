@@ -171,11 +171,18 @@ def preprocess_file(file_path, file_path_preprocessed,
         
     :return: #????
     """
+    
+    # Get a grayscale version of the image pointed at in "file_path" and save
+    # it in the variable "image"
     image = get_image(file_path)
     # image_preprocessed = preprocess_image(image=image, lowpass_filter=lowpass_filter, lowpass_kernel_size=lowpass_kernel_size, highpass_filter=highpass_filter, highpass_kernel_size=highpass_kernel_size, rescale=rescale)
-
-    image_preprocessed = filters.gaussian(image, 2) - filters.gaussian(image, 3)  # Looks quite much like
-    # previous setting
+    
+    # With the module "skimage.filters" apply a gaussian filter to the "image"
+    # image: 
+    #???? How does this work? What is "2" and "3" Possibly the sigma
+    image_preprocessed = filters.gaussian(image, 2) - filters.gaussian(image, 3)  
+    # Looks quite much like previous setting
+    
     image_preprocessed = np.interp(image_preprocessed, 
                                    (image_preprocessed.min(), 
                                     image_preprocessed.max()), 
@@ -217,16 +224,23 @@ def preprocess_folder(directory_original, directory_preprocessed,
     # Check if "directory_preprocessed" exists, and if not create it
     if not os.path.isdir(directory_preprocessed):
         os.mkdir(directory_preprocessed)
-
+    
+    # Preprocess all the files in "directory_original" as listed in "paths"
+    # tqdm for progress bar
     for i in tqdm.trange(len(paths)):
         path = paths[i]
         print(path)
+        # Check that "path" is an "image_format" file, otherwise move to the 
+        # next item in paths
         if not path.endswith(image_format):
             continue
-
+        
+        # Point to the file in its curent location
         file_path = os.path.join(directory_original, path)
+        # Point to where the preprocessed copy should go
         file_path_preprocessed = os.path.join(directory_preprocessed, path)
-
+        
+        # Preprocess the "path" image
         preprocess_file(file_path, file_path_preprocessed,
                         lowpass_filter=lowpass_filter, 
                         lowpass_kernel_size=lowpass_kernel_size,
