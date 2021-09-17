@@ -1,9 +1,11 @@
+# %% Import block
 import os
 import sys
 import time
 import shutil
 import random
 
+# Set working directory as the same one as setup.py
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 import numpy as np
@@ -30,7 +32,7 @@ from keras.preprocessing.image import img_to_array
 
 from src.utils.modify_folders import sort_folds_by_label, remove_redundant_dirs
 
-
+# %%
 def create_folds_(dir_images, dir_labels, dir_target, n_train=1, n_test=4, 
                   n_folds=2, format='tif'):
     """
@@ -52,15 +54,21 @@ def create_folds_(dir_images, dir_labels, dir_target, n_train=1, n_test=4,
     :param format: Expected image format. Tested with 'tif'
     :return:
     """
+    
+    # Aliasing of frequently used functions
     join = os.path.join
     exists = os.path.exists
     
+    # Save the current working directory in a varialbe, then print it and the
+    # target directory.
     cwd = os.getcwd()
     print('cwd', cwd)
     print('target: ', dir_target)
     # TODO: Replace all assert statements with actual raised errors
-    assert not os.path.isdir(dir_target) 
-
+    # Check if "dir_target" is an actual directory
+    assert not os.path.isdir(dir_target)
+    
+    # Create a list of images and a list of labels and then print them both
     filenames_images = [
         file for file in os.listdir(dir_images) if file.endswith('.' + format)
     ]
@@ -69,22 +77,36 @@ def create_folds_(dir_images, dir_labels, dir_target, n_train=1, n_test=4,
     ]
     print(filenames_images)
     print(filenames_labels)
-
+    
+    # Make sure there are as many images as there are image labels 
     assert len(filenames_images) == len(filenames_labels)
+    # Make sure we have enough pictures for training and for testing
     assert n_train + n_test <= len(filenames_images)
-
+    
+    
     for fold in range(n_folds):
+        # Seed the random number generator
+        # TODO Apparently np.random.seed is legacy, substitute?
         np.random.seed(fold)
+        # Generate a 1D array (list) of randomly ordered numbers from 0 to
+        # the number of items in "filename_images" - 1.
         all_idx = np.random.choice(range(len(filenames_images)), 
                                    len(filenames_images), replace=False)
+        # Splice the list of numbers from position 0 to position "n_train"
         train_index = all_idx[:n_train]
+        # Splice the list of numbers from position "n_train"+1 to position 
+        # "n_train"+"n_test"
         test_index = all_idx[n_train:n_train + n_test]
+        # Splice the list of numbers from position "n_train"+"n_test"+1 to the 
+        # end of the list
         omitted_index = all_idx[n_train + n_test:]
-
-        print(train_index)
-        print(test_index)
-        print(omitted_index)
-
+        
+        # Show which numbers ended up where
+        print(f'Train indexes: {train_index}')
+        print(f'Test indexes: {test_index}')
+        print(f'Omitted indexes: {omitted_index}')
+        
+        # Create paths for the folders
         dir_fold = join(dir_target, f'fold{fold}')
         dir_train = join(dir_fold, 'train')
         dir_test = join(dir_fold, 'test')
@@ -92,7 +114,8 @@ def create_folds_(dir_images, dir_labels, dir_target, n_train=1, n_test=4,
         dir_train_labels = join(dir_train, 'original', 'labels', '0')
         dir_test_images = join(dir_test, 'original', 'images', '0')
         dir_test_labels = join(dir_test, 'original', 'labels', '0')
-
+        
+        # Create the folders (if they don't exist)
         if not exists(dir_train_images):
             os.makedirs(dir_train_images)
         if not exists(dir_train_labels):
@@ -101,42 +124,44 @@ def create_folds_(dir_images, dir_labels, dir_target, n_train=1, n_test=4,
             os.makedirs(dir_test_images)
         if not exists(dir_test_labels):
             os.makedirs(dir_test_labels)
-
+        
+        # Make a list of files for training and testing, using the list of all
+        # images "filename_images" and selecting the images indexed at the
+        # numbers saved in "train_index" and "test_index" respectively.
         train_files = [
             str(i) + ': ' + filenames_images[i] for i in train_index]
         test_files = [
             str(i) + ': ' + filenames_images[i] for i in test_index]
-
+        
+        # Save the newly made lists in new .txt files in the folder "dir_folds"
+        # TODO: is overwriting an issue?
         with open(join(dir_fold, 'train.txt'), 'w') as f:
             for item in train_files:
                 f.write('%s\n' % item)
-
         with open(join(dir_fold, 'test.txt'), 'w') as f:
             for item in test_files:
                 f.write('%s\n' % item)
-
+        
+        # Copy the files of the test batch and the train batch in the respective
+        # folders. Both images and labels, correspondingly.
         for index in train_index:
             shutil.copy(
                 join(dir_images, filenames_images[index]),
-                join(dir_train_images),
-            )
+                join(dir_train_images))
             shutil.copy(
                 join(dir_labels, filenames_labels[index]),
-                join(dir_train_labels),
-            )
+                join(dir_train_labels))
         for index in test_index:
             shutil.copy(
                 join(dir_images, filenames_images[index]),
-                join(dir_test_images),
-            )
+                join(dir_test_images))
             shutil.copy(
                 join(dir_labels, filenames_labels[index]),
-                join(dir_test_labels),
-            )
+                join(dir_test_labels))
 
         print(
             f'Created fold{fold} with train/test: {train_index}/{test_index}')
-        fold += 1
+        fold += 1 #???? why is this needed
 
     # else:
     #     fold = 0
@@ -196,6 +221,7 @@ def create_folds_(dir_images, dir_labels, dir_target, n_train=1, n_test=4,
     #         )
     #     )
 
+# %%
 def create_folds(dir_images, dir_labels, dir_target, kfold=1, n_folds=2, 
                  format='tif'):
     """
@@ -356,7 +382,7 @@ def create_folds(dir_images, dir_labels, dir_target, kfold=1, n_folds=2,
         print(
             f'Created fold{fold} with train/test: {train_index}/{test_index}')
         
-
+# %%
 def flip_intensity(image):
     """
     Flips intensity of image
@@ -367,7 +393,7 @@ def flip_intensity(image):
     image_flipped[:, :, 0] = -1 * image[:, :, 0] + 255
     return image_flipped
 
-
+# %%
 def augment_folds(dir_data, m, random_state=2):
     """
     Randomly augmenting images contained in single or multiple folds.
@@ -488,7 +514,7 @@ def augment_folds(dir_data, m, random_state=2):
                     )
                     j_label += 1
 
-
+# %%
 def randomcrop_folds(dir_data, crop_target=None, batch_size=50, 
                      intensity_flip=True, rescale_intensity=True):
     """
@@ -631,7 +657,7 @@ def randomcrop_folds(dir_data, crop_target=None, batch_size=50,
             # batch_images_crops = np.array(batch_images_crops)
             # batch_labels_crops = np.array(batch_labels_crops)
 
-
+# %%
 def random_crop(img, random_crop_size, seed=None):
     # Note: image_data_format is 'channel_last'
     assert img.shape[2] == 3 or img.shape[2] == 1
@@ -642,7 +668,7 @@ def random_crop(img, random_crop_size, seed=None):
     y = np.random.randint(0, height - dy + 1)
     return img[y : (y + dy), x : (x + dx), :]
 
-
+# %%
 def preprocess_generator(X_dir, y_dir = None, channels = 1, batch_size = 30, 
                          seed = None):
     """
@@ -676,7 +702,7 @@ def preprocess_generator(X_dir, y_dir = None, channels = 1, batch_size = 30,
         else:
             pass
 
-
+# %%
 def get_spectrum(target_path, output_path):
     """
     Gets image, calculates 2dfft, shifts&computes magnitude, saves.
@@ -696,7 +722,7 @@ def get_spectrum(target_path, output_path):
     # plt.imshow(magnitude_spectrum, cmap="gray")
     # plt.show()
     return
-
+# %%
 def get_spectrum_for_cnn(parent_dir, folds=1):
     """
     For cnn structure, as produced by modify_folders.make_cnn_structure, 
@@ -736,7 +762,7 @@ def get_spectrum_for_cnn(parent_dir, folds=1):
                 get_spectrum(target_path, output_path)
 
 
-
+# %%
 # augmented_dir = "../data/training/temp/train/0"
 #
 # generator = crop_generator(augmented_dir, brightness_range=[0.1, 0.2])

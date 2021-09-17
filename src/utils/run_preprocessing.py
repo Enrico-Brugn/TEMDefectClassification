@@ -15,7 +15,6 @@ from src.utils.modify_folders import sort_folds_by_label, sort_folds_by_label_,\
                                      remove_redundant_dirs, make_cnn_structure
 
 # %% Preprocessing function
-
 def run(DIR_PARENT, DIR_DEFECTIVE, DIR_NONDEFECTIVE, DIR_FOLDS, PARAMS):
     """
     #????
@@ -48,9 +47,9 @@ def run(DIR_PARENT, DIR_DEFECTIVE, DIR_NONDEFECTIVE, DIR_FOLDS, PARAMS):
     # Create a list of directories
     dirs = [DIR_DEFECTIVE]#, DIR_NONDEFECTIVE]
     for directory in dirs:
-        # Save anumber of paths in variable, with dir_original being the directory
-        # where the images are now, dir_preprocessed where they go after
-        # preprocessing.
+        # Save a number of paths in variable, with "dir_original" being the 
+        # directory where the images are now, "dir_preprocessed" where they go 
+        # after preprocessing.
         # ???? other?
         dir_original = os.path.join(directory, 'images')
         dir_preprocessed = os.path.join(directory, 'preprocessed')
@@ -65,7 +64,7 @@ def run(DIR_PARENT, DIR_DEFECTIVE, DIR_NONDEFECTIVE, DIR_FOLDS, PARAMS):
         preprocess_folder(directory_original = dir_original, 
                           directory_preprocessed = dir_preprocessed)
 
-        # Splitting into folds
+        # Create the folders needed for augmentation
         create_folds_(dir_images = dir_preprocessed, dir_labels = dir_labels, 
                       dir_target = dir_target, n_train = N_TRAIN, 
                       n_test = N_TEST, n_folds=N_FOLDS)
