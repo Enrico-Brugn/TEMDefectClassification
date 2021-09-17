@@ -48,6 +48,10 @@ def run(DIR_PARENT, DIR_DEFECTIVE, DIR_NONDEFECTIVE, DIR_FOLDS, PARAMS):
     # Create a list of directories
     dirs = [DIR_DEFECTIVE]#, DIR_NONDEFECTIVE]
     for directory in dirs:
+        # Save anumber of paths in variable, with dir_original being the directory
+        # where the images are now, dir_preprocessed where they go after
+        # preprocessing.
+        # ???? other?
         dir_original = os.path.join(directory, 'images')
         dir_preprocessed = os.path.join(directory, 'preprocessed')
         dir_labels = os.path.join(directory, 'labels')

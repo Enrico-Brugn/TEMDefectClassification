@@ -74,19 +74,19 @@ def rescale_intensity(image, p_range=(2, 98)):
     p2, p98 = percentile(image, p_range)
     return exposure.rescale_intensity(image, in_range=(p2, p98))
 # %%
-def cut_intensity(image, min=None, max=None):
+def cut_intensity(image, minimum=None, maximum=None):
     """
     # ????
     Args:
         image (np.array): 
-        min ([type]): [description]
-        max ([type]): [description]
+        minimum ([type]): [description] #????
+        maximum ([type]): [description] #????
     """
     image_cut = image.copy()
-    if min is not None:
-        image_cut[image_cut < min] = min
-    if max is not None:
-        image_cut[image_cut > max] = max
+    if minimum is not None:
+        image_cut[image_cut < minimum] = minimum
+    if maximum is not None:
+        image_cut[image_cut > maximum] = maximum
     return image_cut    
     
 # %%
@@ -121,7 +121,8 @@ def preprocess_image(image,
     :param highpass_kernel_size: size of convoluting mask
     :param rescale: type=bool; rescale intensity or not.
     
-    :return:
+    :return: Returns a numpy array representing the image it was passed after
+             filtering
     """
     lowpass_filters = {"mean": mean_filtering,
                        "median": median_filtering,
@@ -161,15 +162,17 @@ def preprocess_file(file_path, file_path_preprocessed,
     """
     Preprocess an image at a given location
     
-    :param file_path: #????
-    :param file_path_preprocessed: #????
-    :param lowpass_filter: #????
-    :param lowpass_kernel_size: #????
-    :param highpass_filter: #????
-    :param highpass_kernel_size: #????
-    :param rescale: #????
+    :param file_path: location of the image to be preprocessed
+    :param file_path_preprocessed: location the preprocessed copy will be saved 
+                                   at
+    :param lowpass_filter: what kind of lowpass filter will be used
+    :param lowpass_kernel_size: size of convoluting mask
+    :param highpass_filter: what kind of low pass filter will be used
+    :param highpass_kernel_size: size of convoluting mask
+    :param rescale: # Unused | type=bool; rescale intensity or not.
+    :param plot: Unused
         
-    :return: #????
+    :return: This function does not return anthing
     """
     
     # Get a grayscale version of the image pointed at in "file_path" and save
@@ -185,7 +188,7 @@ def preprocess_file(file_path, file_path_preprocessed,
     #???? How does this work? What is "2" and "3"? Possibly the sigma?
     #???? Does the subtraction return the difference between 2 arrays? If so 
     #???? the high pass filter would be gaussian? If so there are a lot of
-    #???? unused paramenters
+    #???? unused parameters
     image_preprocessed = filters.gaussian(image, 2) - filters.gaussian(image, 3)  
     # Looks quite much like previous setting
     
@@ -194,8 +197,11 @@ def preprocess_file(file_path, file_path_preprocessed,
                                    (image_preprocessed.min(), 
                                     image_preprocessed.max()), 
                                    (0, 254))
-
+    
+    # Cast a copy of the numpy array into the type 'uint8', this type accepts
+    # values between 0 and 255.
     image_preprocessed = image_preprocessed.astype('uint8')
+    # Save "image_preprocessed" into the directory "file_path_preprocessed"
     cv2.imwrite(file_path_preprocessed, image_preprocessed)
 
 
@@ -217,7 +223,7 @@ def preprocess_folder(directory_original, directory_preprocessed,
     :param highpass_kernel_size: size of convoluting mask
     :param rescale: type=bool; rescale intensity or not.
     
-    :return: #????
+    :return: This function does not return anything
     """
     print(directory_original)
     # Check if directory_original is an existing folder
@@ -227,7 +233,8 @@ def preprocess_folder(directory_original, directory_preprocessed,
     # Sort the elements of the list "paths"
     paths.sort()
 
-    print("preprocessed: ", directory_preprocessed)
+    print(f'preprocessing images in {directory_original} into ' + 
+          f'{directory_preprocessed}')
     # Check if "directory_preprocessed" exists, and if not create it
     if not os.path.isdir(directory_preprocessed):
         os.mkdir(directory_preprocessed)
@@ -255,7 +262,8 @@ def preprocess_folder(directory_original, directory_preprocessed,
                         highpass_kernel_size=highpass_kernel_size,
                         rescale=rescale)
         # TODO: Make sure that arguments are passed on, best in a nice way!!!
-
+    print(f'preprocessed images are in {directory_preprocessed}')
+        
 # %%
 def preprocess_showingoff(file_path, output_dir, name,
                     lowpass_filter="gaussian", lowpass_kernel_size=5,
@@ -264,15 +272,16 @@ def preprocess_showingoff(file_path, output_dir, name,
     """
     Preprocess an image at a given location and plot results
     
-    :param file_path: #????
-    :param file_path_preprocessed: #????
-    :param lowpass_filter: #????
-    :param lowpass_kernel_size: #????
-    :param highpass_filter: #????
-    :param highpass_kernel_size: #????
-    :param rescale: #????
+    :param file_path: location of the image to be preprocessed
+    :param file_path_preprocessed: location the preprocessed copy will be saved 
+                                   at
+    :param lowpass_filter: type=str; either "mean", "median", "gaussian" or None
+    :param lowpass_kernel_size: size of convoluting mask
+    :param highpass_filter: type=str; either "laplacian" or None
+    :param highpass_kernel_size: size of convoluting mask
+    :param rescale: Unused
     
-    :return: #????
+    :return: This function does not return anything
     """
     image = get_image(file_path)
     image_laplace = preprocess_image(image=image, lowpass_filter=None, 

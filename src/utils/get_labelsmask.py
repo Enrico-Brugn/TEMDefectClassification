@@ -160,7 +160,7 @@ def get_labels(dir_labels, dir_annotated, format="tif", no_label=False):
             * ... not touch the walls or be so close to the walls that there 
                   is no space from them to flow.
         Let me explain this further. You can imagine the algorithm to work 
-        like water flowing from the walls, only halting of borders of a 
+        like water flowing from the walls, only halting on borders of a 
         specific color.
         Everything covered by the water will be black (zeros), everything else 
         white (ones). If it didn't work for your annotation, try again for 
