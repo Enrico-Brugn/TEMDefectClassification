@@ -62,7 +62,7 @@ def create_folds_(dir_images, dir_labels, dir_target, n_train=1, n_test=4,
     # Save the current working directory in a varialbe, then print it and the
     # target directory.
     cwd = os.getcwd()
-    print('cwd', cwd)
+    print('cwd: ', cwd)
     print('target: ', dir_target)
     # TODO: Replace all assert statements with actual raised errors
     # Check if "dir_target" is an actual directory
@@ -106,7 +106,11 @@ def create_folds_(dir_images, dir_labels, dir_target, n_train=1, n_test=4,
         print(f'Test indexes: {test_index}')
         print(f'Omitted indexes: {omitted_index}')
         
-        # Create paths for the folders
+        # Create paths for the folders:
+        # dir_data\f'fold{fold}'\'train'\'original\'images'\'0'
+        # dir_data\f'fold{fold}'\'train'\'original\'labels'\'0'
+        # dir_data\f'fold{fold}'\'test'\'original\'images'\'0'
+        # dir_data\f'fold{fold}'\'test'\'original\'labels'\'0'
         dir_fold = join(dir_target, f'fold{fold}')
         dir_train = join(dir_fold, 'train')
         dir_test = join(dir_fold, 'test')
@@ -222,6 +226,7 @@ def create_folds_(dir_images, dir_labels, dir_target, n_train=1, n_test=4,
     #     )
 
 # %%
+#???? What's the difference with create_folds_?
 def create_folds(dir_images, dir_labels, dir_target, kfold=1, n_folds=2, 
                  format='tif'):
     """
@@ -414,8 +419,13 @@ def augment_folds(dir_data, m, random_state=2):
     :param m: factor of augmentation.
     :return:
     """
+    
+    # Alias frequently used function
     join = os.path.join
-    # print("Augment")
+    
+    # Dictionary detailing image augmentation parameters to be fed to 
+    # ImageDataGenerator class. Documentation at:
+    # keras.preprocessing.image.ImageDataGenerator
     datagen_args_img = dict(
         rotation_range = 90,
         fill_mode = 'constant',
@@ -438,20 +448,30 @@ def augment_folds(dir_data, m, random_state=2):
         vertical_flip = True,
         preprocessing_function = preprocess_input,
     )
-
+    
+    # create 2 objects of the ImageDataGenerator class using the dictionaries
+    # just created
     image_datagen = ImageDataGenerator(**datagen_args_img)
     label_datagen = ImageDataGenerator(**datagen_args_label)
-
-    folds = [file for file in os.listdir(dir_data) if file.startswith('fold')]
-
+    
+    # Create a list of "fold" directories (folders) containing the data  
+    # structure detailed in :param dir_data:
+    folds = [
+        folder for folder in os.listdir(dir_data) if folder.startswith('fold')]
+    
+    #???? Why do you redefine random_state?
     random_state = random_state
+    
+    # tdqm for progress bar
     for i in tqdm.trange(len(folds)):
+        # fold is the i-eth element of the list folds
         fold = folds[i]
-    # for fold in folds:
+        
+        # save the path to fold\'train' and fold\'test'
         dir_fold = join(dir_data, fold)
         dir_train = join(dir_fold, 'train')
         dir_test = join(dir_fold, 'test')
-
+        
         for dir in [dir_train, dir_test]:
             # print("LISTDIR:")
             # print(os.listdir(os.path.join(dir, "original", "images", "0")))
@@ -461,19 +481,36 @@ def augment_folds(dir_data, m, random_state=2):
 
             random_state += 1
             # print("DIR: ", dir)
+
+            # save the path to: fold\dir\'original' in a variable
             dir_original = join(dir, 'original')
+            
+            # create the paths to:
+            # fold\dir\'augmented'\'images'\'0'
+            # fold\dir\'augmented'\'labels'\'0'
             dir_augmented = join(dir, 'augmented')
             dir_augmented_images = join(dir_augmented, 'images', '0')
             dir_augmented_labels = join(dir_augmented, 'labels', '0')
+            # delete the folders corresponding to the paths just created if 
+            # they already exist
             if os.path.exists(dir_augmented):
                 shutil.rmtree(dir_augmented, ignore_errors=True)
+            # create the folders with the paths just made
             os.makedirs(dir_augmented_images)
             os.makedirs(dir_augmented_labels)
-
+            
+            # Create 2 DirectoryIterator objects for images and labels using
+            # a common seed, these contain a tubple of (x,y) where x contains a
+            # numpyarray of images and y a numpy of corresponding labels. Note
+            # that in this case we don't use y, or, rather, all images are
+            # labeled the same.
+            # Documentation at: 
+            # keras.preprocessing.image.ImageDataGenerator.flow_from_directory
+            # keras.preprocessing.image.DirectoryIterator
             image_generator = image_datagen.flow_from_directory(
                 join(dir, 'original', 'images'),
-                color_mode = 'grayscale',
                 target_size = (1024, 1024),
+                color_mode = 'grayscale',
                 batch_size = 1000,  # Max value, choose larger than n_samples
                 class_mode = None,
                 shuffle = True,
@@ -484,8 +521,8 @@ def augment_folds(dir_data, m, random_state=2):
 
             label_generator = label_datagen.flow_from_directory(
                 join(dir, 'original', 'labels'),
-                color_mode = 'grayscale',
                 target_size = (1024, 1024),
+                color_mode = 'grayscale',
                 batch_size = 1000,  # Max value, choose larger than n_samples
                 class_mode = None,
                 shuffle = True,
@@ -496,18 +533,32 @@ def augment_folds(dir_data, m, random_state=2):
 
             j_image = 0
             j_label = 0
+            # Create m additional images and corresponding labels from the 
+            # DirectoryIterator object. 
             for j in tqdm.trange(m):
                 # print(j)
+                
+                # Iterate to the next element in the images DirectoryIterator 
+                # object effectively saving a (image,label) tuple in X. This 
+                # lable is not the same lable we use.
                 X = image_generator.__next__()
                 for element in X:
+                    # save the image just estracted from the iterator in 
+                    # dir_augmented_images\'j_image.tif'
                     save_img(
                         join(dir_augmented_images, f'{j_image}.tif'),
                         element,
                     )
                     j_image += 1
-
+                
+                # Iterate to the next element in the lable DirectoryIterator
+                # object, effectively saving a (image,lable) tuple in y. The 
+                # image part of the tuple is actually the lable corresponding 
+                # image just saved from x.
                 y = label_generator.__next__()
                 for element in y:
+                    # save the label just estracted from the iterator in 
+                    # dir_augmented_images\'j_label.tif'
                     save_img(
                         join(dir_augmented_labels, f'{j_label}.tif'),
                         element,

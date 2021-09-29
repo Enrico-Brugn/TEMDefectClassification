@@ -76,6 +76,8 @@ def run(DIR_PARENT, DIR_DEFECTIVE, DIR_NONDEFECTIVE, DIR_FOLDS, PARAMS):
 
         # %% Augmenting
         print('AUGMENTING...')
+        # Create an AUGMENTATION_FACTOR number of images based on the ones
+        # saved in dir_target
         augment_folds(dir_data = dir_target, m = AUGMENTATION_FACTOR)
         print('RANDOM CROPPING...')
         randomcrop_folds(dir_data = dir_target, crop_target = TARGET_SIZE, 
