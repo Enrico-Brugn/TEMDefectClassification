@@ -417,7 +417,7 @@ def augment_folds(dir_data, m, random_state=2):
                             labels
 
     :param m: factor of augmentation.
-    :return:
+    :return: this function does not return anything
     """
     
     # Alias frequently used function
@@ -570,17 +570,29 @@ def randomcrop_folds(dir_data, crop_target=None, batch_size=50,
                      intensity_flip=True, rescale_intensity=True):
     """
     Randomly crops patches from images. It validates if they are free of 
-    border/white areas, then saves them ,
-    :param dir_data:
-    :param crop_target:
-    :param batch_size:
-    :param rescale_intensity:
-    :param remove_original:
+    border/white areas, then saves them.
+    dir_data -- Directory where folds are located.
+                     folds need to be directories called "fold*" with the 
+                     following structure:
+                     train
+                        original
+                            images
+                            labels
+                     test
+                        original
+                            images
+                            labels
+    crop_target --
+    batch_size --
+    rescale_intensity --
+    remove_original --
     :return:
     """
     join = os.path.join
     
     # print("Cropping")
+    # Create a list of "fold" directories (folders) containing the data  
+    # structure detailed in :param dir_data:
     folds = [file for file in os.listdir(dir_data) if file.startswith('fold')]
 
     random_state = 2
